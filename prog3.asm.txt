@@ -1,0 +1,98 @@
+	mvi	c, cin
+loop1:	call	bdos		; Get input and delete it if it’s not a number
+	cpi	cr
+	jz	output
+
+	lxi	sp, sp0		; load the middle of the buffer into sp
+	cpi	‘0’
+	jnc	loop2
+	cpi	‘9’ + 1
+	jc	store
+	
+	mvi	c, cout
+	mvi	e, back
+	call	bdos
+	mvi	c, cin
+
+loop2:	sui	‘0’ + 4		; Store the input in memory
+	jn	loop4
+loop3:	jz	store		; Increments sp to point at counter 
+	inr	sp
+	dcr	a
+	cpi	0
+	jmp	loop3
+loop4:	dcr	sp		; Decrements sp 
+	inr	a
+	cpi	0
+	jnz	loop4
+
+store:	push	h
+	inr	h
+	pop	h
+	jmp	loop1
+
+output:	mvi	b, 0		; B will count which number’s histo is being printed
+	lxi	sp, sp0-4	; Point SP at first counter
+loop5:	mvi	e, lf
+	call	bdos
+	mvi	e, cr
+	call	bdos
+	mvi	a, 10		; Check if all ten have been printed yet
+	cmp	b
+	jz	end
+	mvi	a, 0		; Reg A will check when a counter is depleted
+	pop	h		; Pop two counters to H-L pair
+	mvi	c, string
+	lxi	d, mess2	; Format the histogram
+	call	bdos
+	mvi	c, cout
+	mov	e, b
+	call	bdos		; Print the number of the corresponding histogram
+	mvi	e, ‘:’
+	call	bdos
+	mvi	e, ‘ ‘
+	call	bdos
+	mvi	e, ‘X’
+	inr	b
+loop6:	cmp	h		; A number of X’s will be printed
+	jz	printL		; Corresponding to the counter in H
+	call	bdos
+	dcr	h
+	jmp	loop6
+
+printL:	mvi	c, string	; This loop does the same thing for the counter in L
+	lxi	d, mess2
+	call	bdos
+	mvi	c, cout
+	mov	e, b
+	call	bdos		
+	mvi	e, ‘:’
+	call	bdos
+	mvi	e, ‘ ‘
+	call	bdos
+	mvi	e, ‘X’
+	inr	b
+loop7:	cmp	l
+	jz	loop5
+	call	bdos
+	dcr	l
+	jmp	loop7
+
+end:	mvi	d, mess3
+	mvi	c, cout
+	call	bdos
+	end
+	jmp	boot
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;Subroutines
+
+;;;Messages
+
+ds	10
+sp0	equ	$
+
+	
+	
+	
